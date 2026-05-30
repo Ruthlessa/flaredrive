@@ -33,7 +33,9 @@ const site = useSiteStore()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
-const allowRegister = computed(() => site.allowRegister)
+// 强制开放注册功能
+const allowRegister = computed(() => true)
+// const allowRegister = computed(() => site.allowRegister)
 
 const redirectTo = computed(() => {
   const q = route.query.redirect
