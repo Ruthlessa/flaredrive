@@ -1,0 +1,44 @@
+:root
+  font-size: 16px
+
+*
+  box-sizing: border-box
+
+.n-modal.n-card
+  width: 860px
+  max-width: 95vw
+  margin-top: 2rem
+  margin-bottom: 2rem
+
+.n-icon
+  vertical-align: middle
+
+pre, code
+  font-family: 'Maple Mono NF CN', 'Maple Mono NF', 'Maple Mono', 'JetBrainsMono Nerd Font', 'JetBrains Mono NF', 'JetBrains Mono', Consolas, 'Courier New', monospace
+
+code:not(.n-code)
+  font-size: 0.9em
+  padding: 0.2em 0.4em
+  background-color: rgba(100, 100, 100, 0.25)
+  border-radius: 0.25rem
+pre code[class*="language-"]
+  font-size: inherit
+  padding: 0
+  background-color: unset
+  border-radius: unset
+
+pre:not(.__code__, .n-code__line-numbers)
+  padding: 1em
+  background-color: rgba(100, 100, 100, 0.25)
+  border-radius: 0.5rem
+  overflow: auto
+
+.n-config-provider
+  ol
+    list-style: decimal
+  ul
+    list-style: disc
+    ul
+      list-style: circle
+      ul
+        list-style: square
