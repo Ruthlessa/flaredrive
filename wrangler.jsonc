@@ -31,7 +31,7 @@
   "migrations": [
     {
       "tag": "do-session-revocation-v1",
-      "new_classes": ["SessionRevocationDO"],
+      "new_sqlite_classes": ["SessionRevocationDO"],
     },
   ],
   "vars": {
