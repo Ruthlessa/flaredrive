@@ -10,7 +10,7 @@
     {
       "binding": "D1",
       "database_name": "flaredrive",
-      "database_id": "0a4defda-2e67-4bd6-9c6a-36409dfb3e75",
+      "database_id": "290366cd-c4db-44c1-95a5-f8144fb86f3f",
       "migrations_dir": "drizzle",
     },
   ],

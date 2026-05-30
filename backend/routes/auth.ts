@@ -113,10 +113,12 @@ const authorizationLevelForUser = (user: { id: number; authorizationLevel: numbe
 export const auth = new Hono<HonoEnv>()
 
 auth.post('/register', async (ctx) => {
-  const allowRegister = (await getResolvedPublicSiteSettings(ctx)).allowRegister
-  if (!allowRegister) {
-    return ctx.json({ error: 'Registration disabled' }, 403)
-  }
+  // 强制开放注册功能
+  const allowRegister = true
+  // const allowRegister = (await getResolvedPublicSiteSettings(ctx)).allowRegister
+  // if (!allowRegister) {
+  //   return ctx.json({ error: 'Registration disabled' }, 403)
+  // }
 
   const body = await ctx.req.json().catch(() => null)
   const email = normalizeEmail(body?.email || '')
