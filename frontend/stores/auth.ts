@@ -1,4 +1,4 @@
-import fexios from 'fexios'
+import { http } from '../utils/http'
 
 export type AuthUser = {
   id: number
@@ -25,7 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     pending.value = (async () => {
       try {
-        const { data } = await fexios.get<AuthUser>('/api/auth/me')
+        const { data } = await http.get<AuthUser>('/api/auth/me')
         user.value = data
         return data
       } catch (e) {
@@ -43,7 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const register = async (payload: { email: string; password: string }) => {
     try {
-      await fexios.post('/api/auth/register', payload)
+      await http.post('/api/auth/register', payload)
     } catch (e) {
       throw new Error(getErrorMessage(e))
     }
@@ -51,7 +51,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (payload: { email: string; password: string }) => {
     try {
-      await fexios.post('/api/auth/login', payload)
+      await http.post('/api/auth/login', payload)
       await fetchMe(true)
     } catch (e) {
       throw new Error(getErrorMessage(e))
@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      await fexios.post('/api/auth/logout')
+      await http.post('/api/auth/logout')
     } catch {
       // ignore
     } finally {

@@ -115,7 +115,7 @@ import {
   useMessage,
 } from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui'
-import fexios from 'fexios'
+import { http } from '@/utils/http'
 import { IconRefresh } from '@tabler/icons-vue'
 
 import type { SiteSettingResult, SiteSettingSource } from '../../../common/site-settings'
@@ -240,7 +240,7 @@ const sourceTagType = (source?: SiteSettingSource) => {
 const loadSettings = async () => {
   isLoading.value = true
   try {
-    const { data } = await fexios.get<AdminSettingsResponse>('/api/admin/settings')
+    const { data } = await http.get<AdminSettingsResponse>('/api/admin/settings')
     settings.value = data
     form.siteName = data?.siteName?.value || ''
     form.allowRegister = !!data?.allowRegister?.value
@@ -278,7 +278,7 @@ const saveAll = async () => {
 
   isSaving.value = true
   try {
-    await fexios.put('/api/admin/settings', {
+    await http.put('/api/admin/settings', {
       siteName: name,
       allowRegister: !!form.allowRegister,
       randomUploadDir: randomDir,
@@ -303,7 +303,7 @@ const resetToFallback = async () => {
   }
   isResetting.value = true
   try {
-    await fexios.put('/api/admin/settings', {
+    await http.put('/api/admin/settings', {
       siteName: null,
       allowRegister: null,
       randomUploadDir: null,

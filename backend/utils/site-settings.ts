@@ -105,20 +105,23 @@ export const getSiteSettingsBatch = async <TDefs extends Record<string, SiteSett
   ctx: any,
   defs: TDefs
 ): Promise<SiteSettingResults<TDefs>> => {
-  const db = getDb(ctx)
   const entries = Object.entries(defs) as Array<[keyof TDefs, SiteSettingDefinition<any>]>
-  const dbKeys = entries.map(([, def]) => def.dbKey)
-
-  const rows = dbKeys.length
-    ? await db
-        .select({ key: siteSettings.key, value: siteSettings.value })
-        .from(siteSettings)
-        .where(inArray(siteSettings.key, dbKeys))
-        .all()
-    : []
-
   const rowMap = new Map<string, string | null>()
-  for (const row of rows) rowMap.set(row.key, row.value ?? null)
+  
+  try {
+    const db = getDb(ctx)
+    const dbKeys = entries.map(([, def]) => def.dbKey)
+    const rows = dbKeys.length
+      ? await db
+          .select({ key: siteSettings.key, value: siteSettings.value })
+          .from(siteSettings)
+          .where(inArray(siteSettings.key, dbKeys))
+          .all()
+      : []
+    for (const row of rows) rowMap.set(row.key, row.value ?? null)
+  } catch {
+    // Database not available, skip reading from DB
+  }
 
   const result: Record<string, SiteSettingResult<any>> = {}
   for (const [name, def] of entries) {
@@ -128,10 +131,14 @@ export const getSiteSettingsBatch = async <TDefs extends Record<string, SiteSett
       continue
     }
 
-    const envRaw = readEnvVars(ctx, def.envKey)
-    if (typeof envRaw !== 'undefined') {
-      result[String(name)] = { value: def.parse(envRaw, def.defaultValue), source: 'env' }
-      continue
+    try {
+      const envRaw = readEnvVars(ctx, def.envKey)
+      if (typeof envRaw !== 'undefined') {
+        result[String(name)] = { value: def.parse(envRaw, def.defaultValue), source: 'env' }
+        continue
+      }
+    } catch {
+      // Error reading env vars
     }
 
     result[String(name)] = { value: def.defaultValue, source: 'default' }
@@ -204,24 +211,28 @@ export const getPublicSiteSettings = async (ctx: any) => {
 }
 
 export const getResolvedPublicSiteSettings = async (ctx: any) => {
-  const cached = await cacheGetJson<{
-    siteName: string
-    allowRegister: boolean
-    randomUploadDir: string
-    batchUploadConcurrency: number
-    uploadHistoryLimit: number
-    previewSizeLimitText: number
-  }>(ctx, RESOLVED_PUBLIC_SETTINGS_CACHE_KEY)
-  if (
-    cached &&
-    typeof cached.siteName === 'string' &&
-    typeof cached.allowRegister === 'boolean' &&
-    typeof cached.randomUploadDir === 'string' &&
-    typeof cached.batchUploadConcurrency === 'number' &&
-    typeof cached.uploadHistoryLimit === 'number' &&
-    typeof cached.previewSizeLimitText === 'number'
-  ) {
-    return cached
+  try {
+    const cached = await cacheGetJson<{
+      siteName: string
+      allowRegister: boolean
+      randomUploadDir: string
+      batchUploadConcurrency: number
+      uploadHistoryLimit: number
+      previewSizeLimitText: number
+    }>(ctx, RESOLVED_PUBLIC_SETTINGS_CACHE_KEY)
+    if (
+      cached &&
+      typeof cached.siteName === 'string' &&
+      typeof cached.allowRegister === 'boolean' &&
+      typeof cached.randomUploadDir === 'string' &&
+      typeof cached.batchUploadConcurrency === 'number' &&
+      typeof cached.uploadHistoryLimit === 'number' &&
+      typeof cached.previewSizeLimitText === 'number'
+    ) {
+      return cached
+    }
+  } catch {
+    // Cache error, continue without cache
   }
 
   const resolved = await getPublicSiteSettings(ctx)
@@ -234,9 +245,13 @@ export const getResolvedPublicSiteSettings = async (ctx: any) => {
     previewSizeLimitText: resolved.previewSizeLimitText.value,
   }
 
-  await cachePutJson(ctx, RESOLVED_PUBLIC_SETTINGS_CACHE_KEY, computed, {
-    ttlSeconds: RESOLVED_PUBLIC_SETTINGS_TTL_SECONDS,
-  })
+  try {
+    await cachePutJson(ctx, RESOLVED_PUBLIC_SETTINGS_CACHE_KEY, computed, {
+      ttlSeconds: RESOLVED_PUBLIC_SETTINGS_TTL_SECONDS,
+    })
+  } catch {
+    // Ignore cache write errors
+  }
 
   return computed
 }

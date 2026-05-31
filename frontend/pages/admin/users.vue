@@ -40,7 +40,7 @@ import {
   NPopconfirm,
   useMessage,
 } from 'naive-ui'
-import fexios from 'fexios'
+import { http } from '@/utils/http'
 import { IconRefresh } from '@tabler/icons-vue'
 
 type AdminUserRow = {
@@ -99,7 +99,7 @@ const resetForm = () => {
 const loadUsers = async () => {
   isLoading.value = true
   try {
-    const { data } = await fexios.get<AdminUserRow[]>('/api/admin/users')
+    const { data } = await http.get<AdminUserRow[]>('/api/admin/users')
     rows.value = data || []
   } catch (e: any) {
     message.error(e?.response?.data?.error || e?.message || 'Failed to load')
@@ -126,7 +126,7 @@ const submitCreate = async () => {
 
   isSubmitting.value = true
   try {
-    await fexios.post('/api/admin/users', form)
+    await http.post('/api/admin/users', form)
     message.success('Created successfully')
     showCreate.value = false
     await loadUsers()
@@ -139,7 +139,7 @@ const submitCreate = async () => {
 
 const updateAuthLevel = async (row: AdminUserRow, value: number) => {
   try {
-    await fexios.patch(`/api/admin/users/${row.id}`, { authorizationLevel: value })
+    await http.patch(`/api/admin/users/${row.id}`, { authorizationLevel: value })
     message.success('Updated successfully')
     await loadUsers()
   } catch (e: any) {
@@ -149,7 +149,7 @@ const updateAuthLevel = async (row: AdminUserRow, value: number) => {
 
 const handleDelete = async (row: AdminUserRow) => {
   try {
-    await fexios.delete(`/api/admin/users/${row.id}`)
+    await http.delete(`/api/admin/users/${row.id}`)
     message.success('Deleted successfully')
     await loadUsers()
   } catch (e: any) {

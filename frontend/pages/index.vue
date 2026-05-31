@@ -100,7 +100,7 @@ import {
 import { NIcon, useDialog, useMessage } from 'naive-ui'
 import type { BucketInfo } from '@/models/BucketClient'
 import BucketForm from '@/components/BucketForm.vue'
-import fexios from 'fexios'
+import { http } from '@/utils/http'
 
 definePage({
   name: 'index',
@@ -207,7 +207,7 @@ const handleBucketAction = async (key: string, item: BucketInfo) => {
       negativeText: 'Cancel',
       onPositiveClick: async () => {
         try {
-          await fexios.delete(`/api/buckets/${item.id}`)
+          await http.delete(`/api/buckets/${item.id}`)
           message.success('Bucket deleted')
           await bucketStore.fetchBucketList()
         } catch (e: any) {
@@ -218,7 +218,7 @@ const handleBucketAction = async (key: string, item: BucketInfo) => {
   } else if (key === 'test') {
     const msg = message.loading('Testing connection...', { duration: 0 })
     try {
-      const { data } = await fexios.post(`/api/buckets/${item.id}/test`)
+      const { data } = await http.post(`/api/buckets/${item.id}/test`)
       // message.success(`Connection successful! Latency: ${data.latencyMs}ms`)
       msg.type = 'success'
       msg.content = `Connection successful! Latency: ${data.latencyMs}ms`

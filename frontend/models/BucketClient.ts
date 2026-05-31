@@ -1,4 +1,4 @@
-import { Fexios, type FexiosFinalContext } from 'fexios'
+import { http, type HttpResponse } from '@/utils/http'
 
 export type StorageListObject = {
   key: string
@@ -38,28 +38,21 @@ export interface BucketInfo {
 }
 
 export class BucketClient {
-  readonly request: Fexios
-  constructor(private baseURL: string = '/api/bucket/') {
-    this.request = Fexios.create({
-      baseURL,
-    })
-  }
+  constructor(private baseURL: string = '/api/bucket/') {}
 
   setBaseURL(baseURL: string) {
     this.baseURL = baseURL
-    this.request.defaults.baseURL = baseURL
     return this
   }
 
   list(prefix: string, options?: { delimiter?: string; limit?: number; startAfter?: string }) {
     const { delimiter, limit, startAfter } = options || {}
-    return this.request.get<StorageListResult>(prefix, {
-      query: {
-        delimiter,
-        limit,
-        startAfter,
-      },
-    })
+    const url = new URL(prefix, window.location.origin + this.baseURL)
+    if (delimiter !== undefined) url.searchParams.set('delimiter', delimiter)
+    if (limit !== undefined) url.searchParams.set('limit', String(limit))
+    if (startAfter !== undefined) url.searchParams.set('startAfter', startAfter)
+    const path = url.pathname + url.search
+    return http.get<StorageListResult>(path)
   }
 
   upload(
@@ -84,25 +77,26 @@ export class BucketClient {
       },
       {} as Record<string, string>
     )
-    return this.request.put<StorageListObject>(key, file, {
+    const url = this.baseURL + key
+    return http.put<StorageListObject>(url, file, {
       headers: {
         ...metaHeaders,
         'Content-Type': contentType || 'application/octet-stream',
       },
-      timeout: 0,
     })
   }
 
-  delete(key: string): Promise<FexiosFinalContext<any>> {
-    return this.request.delete(key)
+  delete(key: string): Promise<HttpResponse<any>> {
+    const url = this.baseURL + key
+    return http.delete(url)
   }
 
-  rename(oldKey: string, newKey: string): Promise<FexiosFinalContext<any>> {
-    return this.request.put(newKey, null, {
-      query: {
-        copySource: oldKey,
-      },
-    })
+  rename(oldKey: string, newKey: string): Promise<HttpResponse<any>> {
+    const url = this.baseURL + newKey
+    const fullUrl = new URL(url, window.location.origin)
+    fullUrl.searchParams.set('copySource', oldKey)
+    const path = fullUrl.pathname + fullUrl.search
+    return http.put(path)
   }
 
   private convertNonAsciiString(str: string) {

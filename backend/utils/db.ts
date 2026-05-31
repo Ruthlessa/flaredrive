@@ -11,3 +11,12 @@ export const getDb = (ctx: Context<HonoEnv>) => {
   }
   return drizzle(d1)
 }
+
+export const hasDb = (ctx: Context<HonoEnv>): boolean => {
+  try {
+    const d1 = env(ctx).D1
+    return !!d1
+  } catch {
+    return false
+  }
+}
