@@ -5,7 +5,7 @@ import { config } from 'dotenv'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'
-import { cloudflare } from '@cloudflare/vite-plugin'
+// import { cloudflare } from '@cloudflare/vite-plugin'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
@@ -44,7 +44,7 @@ export default defineConfig({
       resolvers: [NaiveUiResolver()],
     }),
     UnoCSS({}),
-    cloudflare(),
+    // cloudflare(),
   ],
   build: {
     outDir: 'dist',
@@ -62,5 +62,11 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5880,
     cors: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+      },
+    },
   },
 })

@@ -1,9 +1,13 @@
 export const readEnv = <T = string>(key: string, defaultValue?: T, transform?: (value: any) => T) => {
-  let rawValue =
-    import.meta.env[key] ||
-    import.meta.env[`VITE_${key}`] ||
-    (globalThis as any)?.process?.env?.[key] ||
-    (globalThis as any)?.process?.env?.[`VITE_${key}`]
+  let rawValue: any
+  try {
+    rawValue =
+      (typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env[key] || import.meta.env[`VITE_${key}`]) : undefined) ||
+      (globalThis as any)?.process?.env?.[key] ||
+      (globalThis as any)?.process?.env?.[`VITE_${key}`]
+  } catch {
+    rawValue = undefined
+  }
   if (typeof rawValue === 'undefined') {
     if (typeof defaultValue === 'undefined') {
       return void 0 as T
@@ -28,7 +32,7 @@ export const parseBoolean = (value: unknown, defaultValue: boolean) => {
  * `CDN_BASE_URL` + `R2Object.key` = public URL
  */
 export const CDN_BASE_URL = readEnv<string>('VITE_CDN_BASE_URL', '/api/raw/', (value) => {
-  return 'document' in globalThis ? new URL(value || '', window.location.origin).toString() : value
+  return 'document' in globalThis && typeof window !== 'undefined' && window.location ? new URL(value || '', window.location.origin).toString() : value
 })
 /**
  * Internal hidden directory key, for generation thumbnails and so on
