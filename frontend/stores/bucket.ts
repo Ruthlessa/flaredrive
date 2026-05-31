@@ -1,6 +1,6 @@
 import { type BucketInfo, BucketClient, type StorageListObject } from '@/models/BucketClient'
 import { FileHelper } from '@/utils/FileHelper'
-import fexios from 'fexios'
+import { http } from '@/utils/http'
 import PQueue from 'p-queue'
 
 export const useBucketStore = defineStore('bucket', () => {
@@ -68,7 +68,7 @@ export const useBucketStore = defineStore('bucket', () => {
     }
     isBucketListLoading.value = true
     try {
-      const { data } = await fexios.get<BucketInfo[]>('/api/buckets')
+      const { data } = await http.get<BucketInfo[]>('/api/buckets')
       availableBuckets.value = data || []
       bucketCdnMap.value = (data || []).reduce(
         (acc, item) => {
@@ -218,7 +218,7 @@ export const useBucketStore = defineStore('bucket', () => {
 
   const togglePublic = async (path: string, isPublic: boolean) => {
     try {
-      const { data } = await fexios.patch(`/api/bucket/${currentBucketName.value}/${path}`, {
+      const { data } = await http.patch(`/api/bucket/${currentBucketName.value}/${path}`, {
         isPublic,
       })
       // Should probably update the list item state locally too if we had it in store
@@ -232,7 +232,7 @@ export const useBucketStore = defineStore('bucket', () => {
   const recordUpload = async (key: string, size: number, contentType: string) => {
     try {
       if (!currentBucketName.value) return
-      await fexios.post(`/api/objects/${currentBucketName.value}/record`, {
+      await http.post(`/api/objects/${currentBucketName.value}/record`, {
         key,
         size,
         contentType,
@@ -296,18 +296,20 @@ export const useBucketStore = defineStore('bucket', () => {
       }) as StorageListObject
     } else {
       // 2. Presign Flow: Get URL
-      const { data: presignInfo } = await fexios.post(`/api/objects/${currentBucketName.value}/presign`, {
+      const { data: presignInfo } = await http.post(`/api/objects/${currentBucketName.value}/presign`, {
         action: 'put',
         key: targetKey,
         contentType,
       })
 
       // 3. Direct PUT to S3
-      await fexios.put(presignInfo.url, file, {
+      // For S3 upload, we use regular fetch since it's an external URL
+      await fetch(presignInfo.url, {
+        method: 'PUT',
         headers: {
           'Content-Type': contentType,
         },
-        timeout: 0,
+        body: file,
       })
 
       // 4. Record History

@@ -95,7 +95,7 @@ import {
   IconGlobe,
   IconPhoto,
 } from '@tabler/icons-vue'
-import fexios from 'fexios'
+import { http } from '@/utils/http'
 import { useMessage, type FormInst, type FormRules } from 'naive-ui'
 
 const props = defineProps<{
@@ -183,11 +183,11 @@ const handleSubmit = async () => {
 
     if (props.bucket) {
       // Edit Mode
-      await fexios.put(`/api/buckets/${props.bucket.id}`, payload)
+      await http.put(`/api/buckets/${props.bucket.id}`, payload)
       message.success('Bucket updated successfully')
     } else {
       // Create Mode
-      await fexios.post('/api/buckets', payload)
+      await http.post('/api/buckets', payload)
       message.success('Bucket created successfully')
     }
 

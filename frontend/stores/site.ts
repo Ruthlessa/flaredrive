@@ -1,4 +1,4 @@
-import fexios from 'fexios'
+import { http } from '../utils/http'
 
 export type PublicSiteSettings = {
   siteName: string
@@ -37,7 +37,7 @@ export const useSiteStore = defineStore('site', () => {
     isLoading.value = true
     pending.value = (async () => {
       try {
-        const { data } = await fexios.get<PublicSiteSettings>('/api/site/public-settings')
+        const { data } = await http.get<PublicSiteSettings>('/api/site/public-settings')
         siteName.value = (data?.siteName || '').toString().trim() || 'FlareDrive'
         allowRegister.value = !!data?.allowRegister
 

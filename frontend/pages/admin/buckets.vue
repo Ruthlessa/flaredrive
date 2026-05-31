@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { NButton, NButtonGroup, NPopconfirm, NTag, NSpace, useMessage, type DataTableColumns } from 'naive-ui'
 import { IconEdit, IconRefresh, IconTrash } from '@tabler/icons-vue'
-import fexios from 'fexios'
+import { http } from '@/utils/http'
 import type { BucketInfo } from '@/models/BucketClient'
 
 const message = useMessage()
@@ -41,7 +41,7 @@ const isLoading = ref(false)
 const loadBuckets = async () => {
   isLoading.value = true
   try {
-    const { data } = await fexios.get<BucketInfo[]>('/api/admin/buckets')
+    const { data } = await http.get<BucketInfo[]>('/api/admin/buckets')
     rows.value = data || []
   } catch (e: any) {
     message.error(e?.response?.data?.error || e?.message || 'Failed to load buckets')
@@ -56,7 +56,7 @@ onMounted(() => {
 
 const handleDelete = async (row: BucketInfo) => {
   try {
-    await fexios.delete(`/api/admin/buckets/${row.id}`)
+    await http.delete(`/api/admin/buckets/${row.id}`)
     message.success('Deleted successfully')
     await loadBuckets()
   } catch (e: any) {
